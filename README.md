@@ -1,6 +1,6 @@
-# DE-Ahnenforschung – Deutschlandspezifischer Skill‑Set für Hermes Agent
+# DE-Ahnenforschung – Deutschlandspezifisches Skill‑Set für Hermes Agent
 
-Herzlich willkommen beim **DE‑Ahnenforschung**‑Skill‑Set – dein persönlicher Assistent für die deutsche Genealogie, direkt im Hermes Agent.  
+Herzlich willkommen beim **DE‑Ahnenforschung**‑Skill‑Set – deinem  Assistenten für die deutsche Genealogie, direkt im Hermes Agent (und auch in anderen KI).  
 Egal, ob du gerade erst mit der Ahnenforschung beginnst oder bereits ein erfahrener Forscher bist: Dieses Set liefert dir alles, was du für eine strukturierte, quellensichere und DSGVO‑konforme Arbeit benötigst – alles auf Deutsch und passgenau auf die deutschen Quellen zugeschnitten.
 
 ## Warum dieses Skill‑Set?
