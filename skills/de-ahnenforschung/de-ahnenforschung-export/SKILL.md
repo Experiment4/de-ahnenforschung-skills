@@ -1,45 +1,64 @@
 ---
 name: de-ahnenforschung-export
-description: "DE-Export: GEDCOM 7.0 Export, Review-Report, DSGVO-Ablage für Deutschland."
+description: Use when du akzeptierte Kandidaten aus der review_queue als GEDCOM 7.0 exportieren und den täglichen Review‑Report versenden möchtest. Sichert außerdem DSGVO‑konform und legt Backups an.
 category: de-ahnenforschung
 version: 1.0.0
-author: Schrauberhirn
+author: Schrauberhirn (NousResearch Discord), Hermes Agent
 license: MIT
-platforms: [windows]
+platforms:
+- windows
+- linux
+- macos
+metadata:
+  hermes:
+    tags:
+    - Tree
+    - Archive
+    - Genealogy
+    related_skills:
+    - genealogy-shared
 ---
 
-# DE-Ahnenforschung — Export (EBENE 3)
+# genealogy-tree-archive
 
-## GEDCOM 7.0 Export
+EBENE 3. Das Ablage- und Export-Element. Nimmt akzeptierte review_queue-Eintraege, schreibt
+sie als belegten Fakt in die DB und exportiert den Kanon als GEDCOM. Sendet den Report.
 
-### Command
-```bash
-python scripts/export_gedcom_de.py --db D:\Ahnenforschung\db\working.sqlite
-```
+## Wann laden
+Beim Exportieren des Baums (Gramps), beim Erzeugen des taeglichen Agent-Reports, beim
+Einbinden in das lokale Backup-Konzept (lab-backup).
 
-### Output
-- Datei: `D:\Ahnenforschung\gedcom\families_de.ged`
-- Gramps/Ancestry/FamilySearch kompatibel
-- DE-Charakterkodierung: UTF-8 mit Umlauten
+## GEDCOM 7.0 (Kanon)
+- Export nach D:\Ahnenforschung\gedcom\families.ged
+- Jede INDI/FAM traegt SOUR (Quelle) + confidence als NOTE/_CONF
+- Gramps-kompatibel (Import/Export getestet)
 
-## Review-Report
+## Ablage (D:\Ahnenforschung\)
+- gedcom/families.ged    Kanon
+- db/working.sqlite      Arbeits-DB
+- docs/                  Scans/Urkunden (referenziert, nicht als Blob)
+- reports/               Agent-Reports (Review-Queue)
+- cache/                 Transkriptions-Cache
 
-### Daily Report
-- Wird an Discord/Telegram gesendet
-- Inhalt: neue akzeptierte Personen, ungeprüfte Fakten, Quellen-Lücken
+## DSGVO
+- Verstorbene: unkritisch
+- Lebende: geschuetzt -> KEINE Cloud-Sync, KEINE Personendaten an externe LLM
+- Transkription lokal via Ollama (genealogy-transcription)
+- Backup: in D:\backups einbinden (lab-backup), verschluesselt
 
-### Command
-```bash
-python scripts/review_report_de.py --db D:\Ahnenforschung\db\working.sqlite --channel discord
-```
+## Report
+- scripts/report.py liest review_queue (pending) + confidence-Verteilung
+- Ausgabe an User (Discord/Telegram via Hermes deliver)
 
-## DSGVO-konforme Ablage
+## Skripte
+- scripts/gedcom_export.py (DB -> families.ged)
+- scripts/report.py (Review-Queue + Konfidenz -> Report)
 
-### Regeln
-- Lebende Personen: geschützt, keine Cloud-Uploads
-- Token/Secrets: `D:\Ahnenforschung\fs_token.txt`, nie loggen
-- Backup: `D:\backups`, verschlüsselt
+## Verifikation
+- gedcom_export.py -> families.ged valid (Gramps laedt ohne Fehler)
+- report.py -> Liste der offenen Kandidaten
 
-## Related
-[[de-ahnenforschung-roadmap]]
-[[de-ahnenforschung-darstellung]]
+## Pitfalls
+- GEDCOM ohne Quelle = wertlos: jedes FACT braucht SOUR.
+- Lebende nicht exportieren/publizieren.
+- Backup vor jedem GEDCOM-Re-Export (db/ ist Single Source of Truth).

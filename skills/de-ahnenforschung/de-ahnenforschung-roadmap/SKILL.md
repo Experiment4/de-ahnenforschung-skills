@@ -1,97 +1,53 @@
 ---
 name: de-ahnenforschung-roadmap
-description: "DE-Ahnenforschung Roadmap — Meta-Router & Skill-Kategorie für deutschlandfokussierte Ahnenforschung. DE-Quellen, Kirchenbücher, Stammbäume, DE-Geschichte."
+description: Use when du nicht weißt, welcher genealogy‑Skill für eine konkrete Aufgabe zuständig ist. Gibt den zu ladenden Skill (EBENE 0‑4 + Unter‑Skills) zurück.
 category: de-ahnenforschung
 version: 1.0.0
 author: Schrauberhirn (NousResearch Discord), Hermes Agent
 license: MIT
-platforms: [windows, linux, macos]
+platforms:
+- windows
+- linux
+- macos
 metadata:
   hermes:
-    tags: [Genealogy, Deutschland, DE-Quellen, Kirchenbücher, Stammbaum, Roadmap]
+    tags:
+    - Roadmap
+    - Genealogy
     related_skills:
-      - de-ahnenforschung-daten
-      - de-ahnenforschung-quellen
-      - de-ahnenforschung-forschung
-      - de-ahnenforschung-darstellung
-      - de-ahnenforschung-verifikation
-      - de-ahnenforschung-export
+    - genealogy-shared
 ---
 
-# DE-Ahnenforschung Roadmap (Deutschland-Fokus)
+# genealogy-roadmap (Meta-Router)
 
-Deutschland-fokussierter Ahnenforschungs-Router. Ersetzt das generische `genealogy-roadmap` für deutsche Stammbäume.
-Dieser Skill ist ein **META-ROUTER**: Er entscheidet, welcher Unter-Skill zu welchem Schritt gehört.
-Er führt nichts selbst aus.
+Bei jeder genealogy-Aufgabe hier nachschlagen: WELCHER Skill greift? Vermeidet, dass
+veraltete/redundante Skills geladen werden. Konsolidiert 2026-07-25.
 
-## Skill-Kategorien (EBENEN)
+## ROUTING-TABELLE
 
-### EBENE 0 — Interpretation
-- `de-ahnenforschung-interpretation`: Kurrent/Sütterlin/Latein-Glossar, Kirchenbuch-Status-Marker,
-  Kirche→GEDCOM-Mapping, DE-Geschichte-Kontext (Stände, Territorien, Reichsstädte)
+| Aufgabe | Skill (EBENE) | Unter-Skill bei Bedarf |
+|---------|---------------|------------------------|
+| Kirchenbuch lesen/deuten (Latein, Status) | genealogy-kirchenbuch-deutung (0) | — |
+| Scan transkribieren (Ollama lokal) | genealogy-transcription (1) | transkribus-api-setup |
+| GEDCOM importieren, normalisieren, Daten erfassen | genealogy-data-capture (1) | — |
+| "Wo sind die Kirchenbuch-Archive?" | genealogy-gemeinde-forschung (2) | genealogy-source-research |
+| Quellenlogik, Sperrfristen, Archion/Matricula | genealogy-source-research (2) | genealogy-churchbook-portals |
+| Nachnamen weltweit / Herkunft / Bedeutung | genealogy-name-research (2) | genealogy-name-distribution (VERALTET) |
+| Autonomer FS/OFB-Abgleich, Kandidaten suchen | genealogy-agent-search (2) | genealogy-pool-ingest |
+| GEDCOM 7.0 Export, Review-Report, Backup | genealogy-tree-archive (3) | — |
+| Stammbaum, Timeline, Geo-Map, Dashboard | genealogy-view (4) | — |
+| Religion/Konfession/Orte aus Original | genealogy-shared (GRUNDSATZ) + Original-GEDCOM parsen | — |
+| Technik: GEDCOM-reparse, camelCase, OBJE, SVG, Playwright | genealogy-data-pipeline (Klassen) | — |
+| Quellenprüfung, GPS-5, QUAY, Widerspruch | genealogy-verification (QUERSCHNITT) | — |
 
-### EBENE 1 — Datenprozesse
-- `de-ahnenforschung-daten`: Scans ablegen, Quellen erfassen, GEDCOM importieren,
-  DE-Normalisierung (Umlaute, Reichsstadt-Namen, territoriale Zuordnungen),
-  Windows-\r\n-Linebreak-Handling, RELI/PLAC-Tags aus Original-GEDCOM
+## REGELN
+1. Immer genealogy-shared laden, wenn ein anderer genealogy-Skill greift (Schema/confidence/review_queue).
+2. Original-GEDCOM vor DB (siehe shared-Grundsatz).
+3. Veraltet: genealogy-name-distribution (→ name-research), genealogy-original-gedcom-workflow (→ shared).
+4. Unter-Skills nur bei konkretem Bedarf laden, nicht pauschal.
 
-### EBENE 2 — Forschungsprozesse (DE-Quellen-Logik)
-- `de-ahnenforschung-quellen`: DE-spezifische Quellenlogik —
-  **Hauptskill**. Sperrfristen (Standesamt 110/80/30 Jahre),
-  Kirchenbuch-Portale (Matricula/Archion/FamilySearch),
-  konfessionelles Routing (kath./ev./ reformiert),
-  Archiv-Zuständigkeiten (Landesarchive, Staatsarchive),
-  CompGen/Membrana/ANting,
-  ToS-regeln für Bulk-Download
-- `de-ahnenforschung-kirchenbuecher`: DE-Kirchenbuch-Portal-Praxis
-  (UNTER-SKILL). Matricula-Arcanum-Workarounds,
-  Pfarrei-Listen-Extraktion via PowerShell
-- `de-ahnenforschung-transkription`: KI-Transkription (Kurrent/Sütterlin/Latein)
-  via Gemini/Nous/OpenRouter → page_text + entry Tabellen
-- `de-ahnenforschung-name`: Nachnamen-Forschung — Weltweite Verteilung
-  (AGGREGAT, DSGVO-frei), Herkunft/Bedeutung, DE-Regionen (Geogen/DFDW)
-- `de-ahnenforschung-agent-search`: Autonomer Such-Agent für DE-Quellen,
-  Human-in-the-loop, review_queue mit Match-Score
-
-### EBENE 3 — Ablage/Ergebnis
-- `de-ahnenforschung-export`: GEDCOM 7.0 Export (Gramps-kompatibel),
-  täglicher Review-Report an Discord/Telegram,
-  DSGVO-konforme Ablage auf D:\Ahnenforschung,
-  Backup in D:\backups
-
-### EBENE 4 — Darstellung/Auswertung
-- `de-ahnenforschung-darstellung`: Stammbaum, Nachkommen, Timeline,
-  Geo-Map (DE-Migrationspfade), Quellen-Lücken-Analyse,
-  Konfidenz-Dashboard, Forschungs-Queue
-  Read-only auf db/working.sqlite
-
-### QUERSCHNITT (keine EBENE)
-- `de-ahnenforschung-verifikation`: Verification-Loop —
-  technisch (DB-Integrität, DSGVO-Export-Leck, Quellen-Erreichbarkeit) +
-  fachlich (GPS-5-Check, QUAY-Bewertung, Widerspruchs-Erkennung).
-  Läuft nach data-capture-Accept und vor tree-archive-Export
-- `de-ahnenforschung-geschichte`: DE-Geschichte-Kontext —
-  Territorialentwicklung (Deutsches Reich, DDR, Länder),
-  Konfessionsgeschichte (Reformation, Gegenreformation),
-  Standesrecht, Einwohnsklauseln
-
-## Routing-Entscheidungshilfe
-
-| Was soll ich tun? | Skill laden |
-|---|---|
-| Scans ablegen + normalisieren | de-ahnenforschung-daten |
-| Original-GEDCOM lesen | de-ahnenforschung-daten |
-| Kirchenbuch-Scan transkribieren | de-ahnenforschung-transkription |
-| Kurrent/Sütterlin lesen lernen | de-ahnenforschung-interpretation |
-| Standesamt-Bestellung | de-ahnenforschung-quellen |
-| Matricula/Archion durchsuchen | de-ahnenforschung-kirchenbuecher |
-| Nachname forschen | de-ahnenforschung-name |
-| Datenbank prüfen | de-ahnenforschung-verifikation |
-| Stammbaum ansehen | de-ahnenforschung-darstellung |
-| Exportieren | de-ahnenforschung-export |
-| Hintergrund: Preußen/DDR/Territorien | de-ahnenforschung-geschichte |
-
-## Connected
-[[de-ahnenforschung-daten]]
-[[de-ahnenforschung-quellen]]
-[[de-ahnenforschung-interpretation]]
+## SPIELFOLGE (typischer Forschungslauf)
+capture(1) → transcription(1) → source-research(2)+churchbook-portals →
+agent-search(2)+pool-ingest → review_queue (HITL) → data-capture(1) übernimmt →
+tree-archive(3) export → view(4) darstellen.
+Kirchenbuch-Deutung(0) sitzt vor transcription.

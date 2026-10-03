@@ -1,63 +1,60 @@
 ---
 name: de-ahnenforschung-daten
-description: "DE-Ahnenforschung Daten: Scans ablegen, Quellen erfassen, GEDCOM importieren, DE-Normalisierung."
+description: Use when du rohe Scans, Urkunden oder GEDCOM‑Dateien hast und sie in das normale SQLite‑Schema überführen willst. Erfasst und normalisiert Daten, schreibt nur in working.sqlite.
 category: de-ahnenforschung
 version: 1.0.0
-author: Schrauberhirn
+author: Schrauberhirn (NousResearch Discord), Hermes Agent
 license: MIT
-platforms: [windows]
+platforms:
+- windows
+- linux
+- macos
+metadata:
+  hermes:
+    tags:
+    - Data
+    - Capture
+    - Genealogy
+    related_skills:
+    - genealogy-shared
 ---
 
-# DE-Ahnenforschung — Daten (EBENE 1)
+# genealogy-data-capture
 
-Erfassung und Normalisierung von Ahnenforschungsdaten für **Deutschland**.
+EBENE 1 des Ahnenforschungs-Skillsets. Nimmt rohe Daten auf und normalisiert sie in das
+gemeinsame SQLite-Schema (siehe genealogy-shared/schema.sql). Schreibt NUR in die DB, nie
+selbststaendig in einen Baum/Export.
 
-## Verzeichnislayout (D:\Ahnenforschung\)
+## Wann laden
+Beim Anlegen neuer Personen/Quellen, beim Import eines GEDCOM (Gramps/FamilySearch),
+beim Erfassen von Urkunden-Scans, wenn Datum/Ort normalisiert werden muessen.
 
-- `gedcom/` — Original-GEDCOM-Files (QUELLE DER WAHRHEIT)
-- `db/working.sqlite` — Arbeitsdatenbank
-- `docs/` — Scans/Urkunden
-- `reports/` — Chart-Exporte (HTML+PNG)
-- `images/` — Ahnen-Bilder
-- `cache/` — Transkriptions-Cache
-- `pool/` — Rohdaten-Imports
+## Datenmodell (Spine)
+- Jeder Fakt traegt Pflicht-Feld `confidence`: belegt | unbestaetigt | Vermutung
+- Quelle je Fakt: Typ, Signatur/Archiv-Ref, URL/Link zum Scan, Erhoben-Datum
 
-## DE-Normalisierung
+## Schritte
+1. DB initialisieren (einmalig): `python genealogy/genealogy-shared/scripts/init_db.py`
+2. Scan/Urkunde nach `D:\Ahnenforschung\docs\` legen, Dateiname = Signatur.
+3. person/family/source/fact in DB schreiben (Skript scripts/capture.py oder direkt SQL).
+4. Quellenlink auf docs/-Datei oder externen Record setzen.
+5. confidence je Fakt setzen - ohne Quelle = 'Vermutung'.
 
-### Umlaute
-```
-ue → ü, ae → ä, oe → ö, ss → ß
-Groß-/Kleinschreibung bewahren
-```
+## Normalisierung (Pflicht)
+- Datum -> ISO 8601 (YYYY-MM-DD, unbekannt: YYYY bzw. YYYY-MM)
+- Ort   -> "Ort, Region, Land" (z.B. Schnaittach, Bayern, DE)
+- sex   -> M | F | U
+- Kein Raten: unbekannte Felder LEER lassen, nicht '?'.
 
-### Historische Territorien
-| Historisch | Modern |
-|---|---|
-| Preußen | Brandenburg, Mecklenburg-Vorpommern, etc. |
-| Ostdeutschland | Polen, Tschechien, Rumänien |
-| Schlesien | Polen, Tschechien |
-| Pommern | Deutschland, Polen |
+## Skripte
+- scripts/capture.py (Person/Quelle einfuegen, Normalisierung)
+- genealogy/genealogy-shared/scripts/init_db.py (DB anlegen)
 
-### Windows \r\n Linebreaks
-Immer `f.read().splitlines()` verwenden, NICHT `split("\n")`.
+## Verifikation
+- `SELECT COUNT(*) FROM person;` zeigt eingetragene Personen.
+- `SELECT id, given, surname, confidence FROM person LIMIT 5;` Stichprobe.
 
-## confidence-Konvention
-- `belegt` — Primärquelle (Kirchenbuch, Standesamt)
-- `unbestaetigt` — Sekundärquelle (OFB, Index)
-- `Vermutung` — Geraten, keine Quelle
-
-## Verzeichnisstruktur
-```
-D:\Ahnenforschung\
-├── gedcom\          # Original GEDCOM
-├── db\working.sqlite
-├── docs\            # Scans
-├── reports\         # Exporte
-├── images\          # Fotos
-├── cache\           # Transkription
-└── pool\            # Imports
-```
-
-## Related
-[[de-ahnenforschung-roadmap]]
-[[de-ahnenforschung-interpretation]]
+## Pitfalls
+- Keine Personendaten Lebender in Cloud/LLM - alles lokal auf D:.
+- GEDCOM-Import: Nur Fakten mit Quelle uebernehmen, Rest als 'Vermutung' markieren.
+- Nicht zwei Personen mit gleicher ID anlegen.
